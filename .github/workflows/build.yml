@@ -1,0 +1,164 @@
+name: Build SimpleCC VST3
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master, develop ]
+  release:
+    types: [ created ]
+
+jobs:
+  build-linux:
+    name: Build for Linux
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Extract version
+      id: version
+      run: |
+        VERSION=$(grep "^project(SimpleCC VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\).*/\1/')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Extracted version: $VERSION"
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          git \
+          pkg-config \
+          libasound2-dev \
+          libfreetype6-dev \
+          libx11-dev \
+          libxinerama-dev \
+          libxrandr-dev \
+          libxcursor-dev \
+          libxcomposite-dev \
+          libgl1-mesa-dev \
+          ninja-build
+    
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja
+    
+    - name: Build
+      run: cmake --build build --config Release --parallel $(nproc)
+    
+    - name: Find VST3 plugin
+      id: find-vst3
+      run: |
+        VST3_PATH=$(find build -name "SimpleCC.vst3" -type d | head -1)
+        echo "vst3_path=$VST3_PATH" >> $GITHUB_OUTPUT
+        echo "Found VST3: $VST3_PATH"
+    
+    - name: Create artifact directory
+      run: |
+        mkdir -p artifacts/linux
+        cp -r ${{ steps.find-vst3.outputs.vst3_path }} artifacts/linux/
+    
+    - name: Upload Linux VST3
+      uses: actions/upload-artifact@v4
+      with:
+        name: SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3
+        path: artifacts/linux/SimpleCC.vst3/
+        if-no-files-found: error
+
+  build-windows:
+    name: Build for Windows
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Extract version
+      id: version
+      shell: pwsh
+      run: |
+        $version = (Select-String -Path CMakeLists.txt -Pattern "^project\(SimpleCC VERSION" | ForEach-Object { $_ -replace '.*VERSION ([0-9.]+).*','$1' })
+        echo "version=$version" >> $env:GITHUB_OUTPUT
+        Write-Host "Extracted version: $version"
+    
+    - name: Setup MSVC
+      uses: microsoft/setup-msbuild@v2
+    
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+    
+    - name: Build
+      run: cmake --build build --config Release --parallel
+    
+    - name: Find VST3 plugin
+      id: find-vst3
+      shell: pwsh
+      run: |
+        $vst3Path = Get-ChildItem -Path build -Recurse -Filter "SimpleCC.vst3" -Directory | Select-Object -First 1
+        Write-Host "Found VST3: $($vst3Path.FullName)"
+        echo "vst3_path=$($vst3Path.FullName)" >> $env:GITHUB_OUTPUT
+    
+    - name: Create artifact directory
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Path artifacts/windows -Force
+        Copy-Item -Path "${{ steps.find-vst3.outputs.vst3_path }}" -Destination "artifacts/windows/" -Recurse
+    
+    - name: Upload Windows VST3
+      uses: actions/upload-artifact@v4
+      with:
+        name: SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3
+        path: artifacts/windows/SimpleCC.vst3/
+        if-no-files-found: error
+
+  create-release:
+    name: Create Release Package
+    needs: [build-linux, build-windows]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Extract version
+      id: version
+      run: |
+        VERSION=$(grep "^project(SimpleCC VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\).*/\1/')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Extracted version: $VERSION"
+    
+    - name: Download Linux artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3
+        path: release/linux/SimpleCC.vst3
+    
+    - name: Download Windows artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3
+        path: release/windows/SimpleCC.vst3
+    
+    - name: Create release archives
+      run: |
+        cd release/linux
+        zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip SimpleCC.vst3
+        cd ../windows
+        zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip SimpleCC.vst3
+        cd ../..
+    
+    - name: Upload Release Assets
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip
+          SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
