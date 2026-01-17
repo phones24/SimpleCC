@@ -15,16 +15,12 @@
 
 </div>
 
-## 🎯 Motivation
+## Motivation
 
-**SimpleCC** was created for DAWs that don't provide MIDI CC automation out of the box - like **Bitwig Essentials**. 
+**SimpleCC** was created for DAWs that don't provide MIDI CC automation out of the box (like Bitwig Essentials). 
 If your DAW limits your ability to automate hardware synthesizers or external MIDI gear, SimpleCC bridges that gap by giving you 16 modulation slots to send precise MIDI CC messages to your external instruments.
 
 
----
-
-<div align="center">
 
 **Made with ❤️ by Randomware Audio**
 
-</div>
