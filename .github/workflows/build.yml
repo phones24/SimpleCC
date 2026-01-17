@@ -121,7 +121,7 @@ jobs:
     name: Create Release Package
     needs: [build-linux, build-windows]
     runs-on: ubuntu-latest
-    if: github.event_name == 'release'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
@@ -154,11 +154,41 @@ jobs:
         zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip SimpleCC.vst3
         cd ../..
     
-    - name: Upload Release Assets
+    - name: Create or Update Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: v${{ steps.version.outputs.version }}
+        name: SimpleCC v${{ steps.version.outputs.version }}
+        body: |
+          ## SimpleCC v${{ steps.version.outputs.version }}
+          
+          **Automated release from commit:** ${{ github.sha }}
+          
+          ### Downloads
+          - **Linux**: SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip
+          - **Windows**: SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip
+          
+          ### Installation
+          
+          **Linux:**
+          ```bash
+          unzip SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip
+          cp -r SimpleCC.vst3 ~/.vst3/
+          ```
+          
+          **Windows:**
+          ```powershell
+          Expand-Archive SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip
+          Copy-Item -Path "SimpleCC.vst3" -Destination "$env:COMMONPROGRAMFILES\VST3" -Recurse
+          ```
+          
+          ---
+          
+          *This is an automated release. For more information, see the [README](https://github.com/${{ github.repository }}).*
         files: |
           SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip
           SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip
+        draft: false
+        prerelease: false
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
