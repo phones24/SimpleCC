@@ -154,8 +154,9 @@ jobs:
         cd release/linux
         zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip SimpleCC.vst3
         cd ../windows
-        zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip SimpleCC.vst3
-        cd ../..
+        cd SimpleCC.vst3
+        zip -r ../../../SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip .
+        cd ../../..
     
     - name: Create or Update Release
       uses: softprops/action-gh-release@v1
@@ -167,27 +168,15 @@ jobs:
           
           **Automated release from commit:** ${{ github.sha }}
           
-          ### Downloads
-          - **Linux**: SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip
-          - **Windows**: SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip
-          
           ### Installation
           
-          **Linux:**
-          ```bash
-          unzip SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip
-          cp -r SimpleCC.vst3 ~/.vst3/
-          ```
-          
-          **Windows:**
-          ```powershell
-          Expand-Archive SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip
-          Copy-Item -Path "SimpleCC.vst3" -Destination "$env:COMMONPROGRAMFILES\VST3" -Recurse
-          ```
+          Unpack the archive to your VST3 plugin folder:
+          - **Linux**: `~/.vst3/`
+          - **Windows**: `C:\Program Files\Common Files\VST3\`
           
           ---
           
-          *This is an automated release. For more information, see the [README](https://github.com/${{ github.repository }}).*
+          *For more information, see the [README](https://github.com/${{ github.repository }}).*
         files: |
           SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip
           SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip
