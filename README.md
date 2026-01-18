@@ -28,7 +28,3 @@ Download the latest version from the **[Releases page](https://github.com/phones
 
 Available for **Linux**, **Windows**, and **macOS** (Intel & Apple Silicon) as VST3 plugin.
 
----
-
-**Made with ❤️ by Randomware Audio**
-
