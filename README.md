@@ -26,5 +26,7 @@ If your DAW limits your ability to automate hardware synthesizers or external MI
 
 Download the latest version from the **[Releases page](https://github.com/phones24/SimpleCC/releases)**.
 
-Available for **Linux**, **Windows**, and **macOS** (Intel & Apple Silicon) as VST3 plugin.
+Available for **Linux**, **Windows**, and **macOS** (Apple Silicon) as VST3 plugin.
+
+> **Note for Intel Mac users:** Apple Silicon builds run on Intel Macs via Rosetta 2.
 
