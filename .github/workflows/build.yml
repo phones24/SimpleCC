@@ -120,9 +120,93 @@ jobs:
         path: artifacts/windows/SimpleCC.vst3/
         if-no-files-found: error
 
+  build-macos-intel:
+    name: Build for macOS (Intel)
+    runs-on: macos-13
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Extract version
+      id: version
+      run: |
+        VERSION=$(grep "^project(SimpleCC VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\).*/\1/')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Extracted version: $VERSION"
+    
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=x86_64
+    
+    - name: Build
+      run: cmake --build build --config Release --parallel $(sysctl -n hw.ncpu)
+    
+    - name: Find VST3 plugin
+      id: find-vst3
+      run: |
+        VST3_PATH=$(find build -name "SimpleCC.vst3" -type d | head -1)
+        echo "vst3_path=$VST3_PATH" >> $GITHUB_OUTPUT
+        echo "Found VST3: $VST3_PATH"
+    
+    - name: Create artifact directory
+      run: |
+        mkdir -p artifacts/macos-intel
+        cp -r ${{ steps.find-vst3.outputs.vst3_path }} artifacts/macos-intel/
+    
+    - name: Upload macOS Intel VST3
+      uses: actions/upload-artifact@v4
+      with:
+        name: SimpleCC-v${{ steps.version.outputs.version }}-macOS-Intel-VST3
+        path: artifacts/macos-intel/SimpleCC.vst3/
+        if-no-files-found: error
+
+  build-macos-apple-silicon:
+    name: Build for macOS (Apple Silicon)
+    runs-on: macos-14
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    
+    - name: Extract version
+      id: version
+      run: |
+        VERSION=$(grep "^project(SimpleCC VERSION" CMakeLists.txt | sed 's/.*VERSION \([0-9.]*\).*/\1/')
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Extracted version: $VERSION"
+    
+    - name: Configure CMake
+      run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_OSX_ARCHITECTURES=arm64
+    
+    - name: Build
+      run: cmake --build build --config Release --parallel $(sysctl -n hw.ncpu)
+    
+    - name: Find VST3 plugin
+      id: find-vst3
+      run: |
+        VST3_PATH=$(find build -name "SimpleCC.vst3" -type d | head -1)
+        echo "vst3_path=$VST3_PATH" >> $GITHUB_OUTPUT
+        echo "Found VST3: $VST3_PATH"
+    
+    - name: Create artifact directory
+      run: |
+        mkdir -p artifacts/macos-apple-silicon
+        cp -r ${{ steps.find-vst3.outputs.vst3_path }} artifacts/macos-apple-silicon/
+    
+    - name: Upload macOS Apple Silicon VST3
+      uses: actions/upload-artifact@v4
+      with:
+        name: SimpleCC-v${{ steps.version.outputs.version }}-macOS-AppleSilicon-VST3
+        path: artifacts/macos-apple-silicon/SimpleCC.vst3/
+        if-no-files-found: error
+
   create-release:
     name: Create Release Package
-    needs: [build-linux, build-windows]
+    needs: [build-linux, build-windows, build-macos-intel, build-macos-apple-silicon]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
@@ -149,6 +233,18 @@ jobs:
         name: SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3
         path: release/windows/SimpleCC.vst3
     
+    - name: Download macOS Intel artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: SimpleCC-v${{ steps.version.outputs.version }}-macOS-Intel-VST3
+        path: release/macos-intel/SimpleCC.vst3
+    
+    - name: Download macOS Apple Silicon artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: SimpleCC-v${{ steps.version.outputs.version }}-macOS-AppleSilicon-VST3
+        path: release/macos-apple-silicon/SimpleCC.vst3
+    
     - name: Create release archives
       run: |
         cd release/linux
@@ -156,7 +252,11 @@ jobs:
         cd ../windows
         cd SimpleCC.vst3
         zip -r ../../../SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip .
-        cd ../../..
+        cd ../../macos-intel
+        zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-macOS-Intel-VST3.zip SimpleCC.vst3
+        cd ../macos-apple-silicon
+        zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-macOS-AppleSilicon-VST3.zip SimpleCC.vst3
+        cd ../..
     
     - name: Create or Update Release
       uses: softprops/action-gh-release@v1
@@ -173,6 +273,7 @@ jobs:
           Unpack the archive to your VST3 plugin folder:
           - **Linux**: `~/.vst3/`
           - **Windows**: `C:\Program Files\Common Files\VST3\`
+          - **macOS**: `~/Library/Audio/Plug-Ins/VST3/` or `/Library/Audio/Plug-Ins/VST3/`
           
           ---
           
@@ -180,6 +281,8 @@ jobs:
         files: |
           SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip
           SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip
+          SimpleCC-v${{ steps.version.outputs.version }}-macOS-Intel-VST3.zip
+          SimpleCC-v${{ steps.version.outputs.version }}-macOS-AppleSilicon-VST3.zip
         draft: false
         prerelease: false
       env:

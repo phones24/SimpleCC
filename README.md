@@ -9,7 +9,7 @@
 [![Build Status](https://github.com/phones24/SimpleCC/actions/workflows/build.yml/badge.svg)](https://github.com/phones24/SimpleCC/actions)
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/phones24/SimpleCC/releases)
 [![License](https://img.shields.io/badge/license-Proprietary-red.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-lightgrey.svg)](#download)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey.svg)](#download)
 
 ![SimpleCC Plugin Screenshot](media/simplecc.png)
 
@@ -26,7 +26,7 @@ If your DAW limits your ability to automate hardware synthesizers or external MI
 
 Download the latest version from the **[Releases page](https://github.com/phones24/SimpleCC/releases)**.
 
-Available for **Linux** and **Windows** as VST3 plugin.
+Available for **Linux**, **Windows**, and **macOS** (Intel & Apple Silicon) as VST3 plugin.
 
 ---
 
