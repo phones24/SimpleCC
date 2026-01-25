@@ -94,7 +94,7 @@ const juce::String SimpleCCProcessor::getName() const
 
 bool SimpleCCProcessor::acceptsMidi() const
 {
-    return false;
+    return true;
 }
 
 bool SimpleCCProcessor::producesMidi() const
@@ -160,7 +160,9 @@ void SimpleCCProcessor::processBlock(juce::AudioBuffer<float>& buffer,
                                       juce::MidiBuffer& midiMessages)
 {
     buffer.clear();
-    midiMessages.clear();
+    
+    // Don't clear midiMessages - we want to pass MIDI through!
+    // Just add our CC messages to the existing MIDI
 
     for (int i = 0; i < NUM_SLOTS; ++i)
     {
