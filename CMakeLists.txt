@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(SimpleCC VERSION 1.0.0)
+project(SimpleCC VERSION 1.0.1)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,7 +19,7 @@ juce_add_plugin(SimpleCC
     COMPANY_NAME "Randomware Audio"
     BUNDLE_ID "com.randomware.SimpleCC"
     IS_SYNTH FALSE
-    NEEDS_MIDI_INPUT FALSE
+    NEEDS_MIDI_INPUT TRUE
     NEEDS_MIDI_OUTPUT TRUE
     IS_MIDI_EFFECT TRUE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
