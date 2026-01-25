@@ -234,7 +234,7 @@ SimpleCCEditor::SimpleCCEditor(SimpleCCProcessor& p)
     resetButton.onClick = [this]() { resetAllSlots(); };
     addAndMakeVisible(resetButton);
     
-    versionLabel.setText("Version: 1.0.1", juce::dontSendNotification);
+    versionLabel.setText("Version: " SIMPLECC_VERSION, juce::dontSendNotification);
     versionLabel.setJustificationType(juce::Justification::centredLeft);
     versionLabel.setColour(juce::Label::textColourId, juce::Colours::lightgrey.withAlpha(0.6f));
     versionLabel.setFont(juce::Font(10.0f, juce::Font::plain));
