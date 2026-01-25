@@ -202,9 +202,8 @@ jobs:
         cd release/linux
         zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-Linux-VST3.zip SimpleCC.vst3
         cd ../windows
-        cd SimpleCC.vst3
-        zip -r ../../../SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip .
-        cd ../../macos-apple-silicon
+        zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-Windows-VST3.zip SimpleCC.vst3
+        cd ../macos-apple-silicon
         zip -r ../../SimpleCC-v${{ steps.version.outputs.version }}-macOS-AppleSilicon-VST3.zip SimpleCC.vst3
         cd ../..
     
@@ -220,10 +219,20 @@ jobs:
           
           ### Installation
           
-          Unpack the archive to your VST3 plugin folder:
-          - **Linux**: `~/.vst3/`
-          - **Windows**: `C:\Program Files\Common Files\VST3\`
-          - **macOS**: `~/Library/Audio/Plug-Ins/VST3/` or `/Library/Audio/Plug-Ins/VST3/`
+          **Linux:**
+          1. Extract the zip file
+          2. Copy `SimpleCC.vst3` folder to `~/.vst3/`
+          
+          **Windows:**
+          1. Extract the zip file
+          2. Copy the entire `SimpleCC.vst3` **folder** (not individual files) to `C:\Program Files\Common Files\VST3\`
+          3. Rescan plugins in your DAW
+          
+          **macOS:**
+          1. Extract the zip file
+          2. Copy `SimpleCC.vst3` folder to `~/Library/Audio/Plug-Ins/VST3/` or `/Library/Audio/Plug-Ins/VST3/`
+          
+          > **Important for Windows users:** VST3 plugins are folders, not DLL files. Copy the entire `SimpleCC.vst3` folder as-is.
           
           ---
           
